@@ -6,22 +6,26 @@ from pyspark.sql import Row
 # Initialisation de la session Spark
 spark = SparkSession.builder.appName("MovieRecommendation").getOrCreate()
 
-# Charger l'ensemble de données MovieLens (assurez-vous que le chemin est correct)
-data = spark.read.text("chemin/vers/votre/ensemble-de-donnees")
+# Charger les données des utilisateurs (u.user)
+users_data = spark.read.text("api/data/u.user")
+users = users_data.rdd.map(lambda l: l.split('|')).toDF(['userId', 'age', 'gender', 'occupation', 'zipCode'])
 
-# Prétraitement des données
-ratings = data.rdd.map(lambda l: l.split(','))\
-    .map(lambda l: Row(userId=int(l[0]), movieId=int(l[1]),
-                      rating=float(l[2]), timestamp=int(l[3])))
-ratings_df = spark.createDataFrame(ratings)
+# Charger les données des films (u.item)
+movies_data = spark.read.text("api/data/u.item")
+movies = movies_data.rdd.map(lambda l: l.split('|')).toDF(['movieId', 'title', 'release_date', '...'])  # Ajoutez les colonnes appropriées
 
-# Division des données en ensembles de formation et de test
-(training, test) = ratings_df.randomSplit([0.8, 0.2])
+# Charger les données de notation (u.data)
+ratings_data = spark.read.text("api/data/u.data")
+ratings = ratings_data.rdd.map(lambda l: l.split('\t')).toDF(['userId', 'movieId', 'rating', 'timestamp'])
+
+# Fusionner les DataFrames pour former l'ensemble de données complet
+movie_ratings = ratings.join(movies, 'movieId').join(users, 'userId')
+
+# Diviser l'ensemble de données en ensembles de formation et de test
+(training, test) = movie_ratings.randomSplit([0.8, 0.2])
 
 # Création du modèle ALS
 als = ALS(maxIter=5, regParam=0.01, userCol="userId", itemCol="movieId", ratingCol="rating")
-
-# Entraînement du modèle
 model = als.fit(training)
 
 # Évaluation du modèle sur l'ensemble de test

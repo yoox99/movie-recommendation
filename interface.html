@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommender</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+
+        h1 {
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        input {
+            padding: 8px;
+            width: 300px;
+        }
+
+        button {
+            padding: 8px 15px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        h2 {
+            color: #007bff;
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            border: 1px solid #dee2e6;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        p {
+            margin: 0;
+        }
+        .movie-container {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .movie-box {
+        width: 48%; /* Set the width to occupy almost half of the container */
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 5px;
+        background-color: #fff;
+        margin-bottom: 20px;
+    }
+        
+    </style>
+</head>
+<body>
+    <h1>Movie Recommender</h1>
+    <form method="post">
+        {{ form.csrf_token }}
+        <label for="{{ form.movie_name.id }}">Movie Name:</label>
+        {{ form.movie_name(class="form-control", placeholder="Enter movie name", required="required") }}
+        <br>
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+    
+    {% if result %}
+        <h2>Your Movie</h2>
+        <div>
+            <div>
+                <img src="https://i.pinimg.com/564x/62/98/c9/6298c9062d27ae97f168d4ac61f04d4a.jpg" alt="Movie Poster" style="max-width: 200px; max-height: 300px;">
+            </div>
+            <div>
+            <p><strong>Title:</strong> {{ result['Your Movies']['movie_title'] }}</p>
+            <p><strong>release date:</strong> {{ result['Your Movies']['release_date'] }}</p>
+            <p><strong>Rating:</strong> {{ result['Your Movies']['rating'] }}</p>
+            <p><strong>genre names:</strong> {{ result['Your Movies']['genre'] }}</p>
+            </div>
+            <!-- Add more information as needed -->
+        </div>
+
+        <h2>Recommendations</h2>
+        <ul class="movie-container">
+            {% for movie in result['recommendations'] %}
+                <li>
+                    <div>
+                        <img src="https://i.pinimg.com/564x/62/98/c9/6298c9062d27ae97f168d4ac61f04d4a.jpg" alt="Movie Poster" style="max-width: 200px; max-height: 300px;">
+                        <p><strong>Title:</strong> {{ movie['movie_title'] }}</p>
+                        <p><strong>Release Date:</strong> {{ movie['release_date'] }}</p>
+                        <p><strong>Rating:</strong> {{ movie['rating'] }}</p>
+                        <p><strong>Genres:</strong> {{ movie['genre'] | join(', ') }}</p>
+                    </div>
+           
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
